@@ -13,7 +13,7 @@ jobs:
 
       - name: Configurar Senha e VNC Nativo
         run: |
-          # Altera a senha do runner sem pedir a antiga
+          # Altera a senha do usuário runner sem pedir a antiga
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
           
           # Ativa o VNC nativo do macOS na porta 5900
@@ -23,17 +23,15 @@ jobs:
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Instalar noVNC e ngrok
-        env:
-          NGROK_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      - name: Instalar noVNC e Abrir Túnel VNC
         run: |
-          # Instala ferramentas de conversão VNC-para-Web
-          brew install novnc ngrok/ngrok/ngrok
+          # Instala websockify e novnc via python/pip
+          python3 -m pip install websockify
+          git clone https://github.com/novnc/noVNC.git ~/noVNC
           
-          ngrok config add-authtoken $NGROK_TOKEN
+          # Inicia a ponte noVNC na porta 6080
+          websockify --web ~/noVNC 6080 localhost:5900 &
+          sleep 3
           
-          # Transforma o VNC da porta 5900 em uma interface web na porta 6080
-          websockify --web /opt/homebrew/Cellar/novnc/*/libexec 6080 localhost:5900 &
-          
-          # Cria o túnel HTTP público (funciona no plano grátis do ngrok sem cartão)
-          ngrok http 6080
+          # Cria o túnel público (link exibido no log)
+          ssh -p 443 -R0:localhost:6080 a.pinggy.io
