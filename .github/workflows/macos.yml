@@ -13,30 +13,24 @@ jobs:
 
       - name: Configurar Senha e VNC Nativo
         run: |
-          # Altera a senha do usuário runner
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
-          
-          # Ativa o VNC nativo do macOS na porta 5900
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Instalar noVNC e Abrir Túnel
+      - name: Instalar noVNC e Iniciar Túnel Cloudflare
         run: |
-          # Instala websockify e clona noVNC
           python3 -m pip install websockify --break-system-packages
           git clone https://github.com/novnc/noVNC.git ~/noVNC
           
-          # Inicia a ponte noVNC em segundo plano
+          # Inicia a ponte noVNC
           websockify --web ~/noVNC 6080 localhost:5900 &
           sleep 3
           
-          # Abre o túnel SSH sem pedir confirmação de HostKey e mantendo a conexão ativa
-          ssh -p 443 \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ServerAliveInterval=30 \
-            -T \
-            -R0:localhost:6080 a.pinggy.io
+          # Instala o Cloudflare Tunnel
+          brew install cloudflared
+          
+          # Gera um link público instantâneo e sem limite de 60 minutos
+          cloudflared tunnel --url http://localhost:6080
