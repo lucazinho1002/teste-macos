@@ -13,7 +13,10 @@ jobs:
 
       - name: Configurar Senha e VNC Nativo
         run: |
+          # Reseta a senha do usuário runner para 123456
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
+          
+          # Ativa o VNC nativo na porta 5900
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
@@ -22,5 +25,5 @@ jobs:
 
       - name: Abrir Túnel TCP Estável com LocalXpose
         run: |
-          curl -s https://api.localxpose.io/api/v2/downloads/loclx-darwin-arm64.tar.gz | tar -xz
-          ./loclx tunnel tcp --to 127.0.0.1:5900
+          brew install localxpose
+          loclx tunnel tcp --to 127.0.0.1:5900
