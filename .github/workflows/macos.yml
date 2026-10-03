@@ -20,17 +20,8 @@ jobs:
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Instalar noVNC e Iniciar Túnel Cloudflare
+      - name: Abrir Túnel TCP com Cloudflare
         run: |
-          python3 -m pip install websockify --break-system-packages
-          git clone https://github.com/novnc/noVNC.git ~/noVNC
-          
-          # Inicia a ponte noVNC
-          websockify --web ~/noVNC 6080 localhost:5900 &
-          sleep 3
-          
-          # Instala o Cloudflare Tunnel
           brew install cloudflared
-          
-          # Gera um link público instantâneo e sem limite de 60 minutos
-          cloudflared tunnel --url http://localhost:6080
+          cloudflared tunnel --url tcp://localhost:5900
+          cloudflared tunnel --url tcp://localhost:5900
