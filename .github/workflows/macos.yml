@@ -1,22 +1,22 @@
-name: Acess macOS 15
+name: Acessar Interface macOS 15
 
 on:
-  workflow_dispatch: # Inicia manualmente pelo botão na aba Actions
+  workflow_dispatch:
 
 jobs:
   macos-desktop:
-    runs-on: macos-15 # Usa a VM com macOS 15 Sequoia
+    runs-on: macos-15
 
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Senha do Usuário e VNC Nativo
+      - name: Configurar Senha do Usuário no macOS
         run: |
-          # Define a senha do usuário runner para '123456'
-          echo "runner:123456" | sudo chpasswd
+          # Altera a senha do usuário runner usando o dscl nativo do macOS
+          sudo dscl . -passwd /Users/runner 123456
           
-          # Ativa o serviço de Screen Sharing / VNC nativo do macOS
+          # Ativa o serviço de Screen Sharing / VNC nativo
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
@@ -27,9 +27,6 @@ jobs:
         env:
           NGROK_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
-          # Instala o ngrok via Homebrew no macOS
           brew install ngrok/ngrok/ngrok
           ngrok config add-authtoken $NGROK_TOKEN
-          
-          # Inicia o túnel TCP apontando para a porta do VNC nativo (5900)
           ngrok tcp 5900
