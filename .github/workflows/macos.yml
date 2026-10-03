@@ -23,14 +23,20 @@ jobs:
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Instalar noVNC e Abrir Túnel VNC
+      - name: Instalar noVNC e Abrir Túnel
         run: |
-          # Instala websockify e novnc via python/pip
-          python3 -m pip install websockify
+          # Instala websockify com a flag do Python para o macOS não bloquear
+          python3 -m pip install websockify --break-system-packages
+          
+          # Baixa o repositório oficial do noVNC
           git clone https://github.com/novnc/noVNC.git ~/noVNC
           
           # Inicia a ponte noVNC na porta 6080
           websockify --web ~/noVNC 6080 localhost:5900 &
+          sleep 3
+          
+          # Cria o túnel público via Pinggy
+          ssh -p 443 -R0:localhost:6080 a.pinggy.io
           sleep 3
           
           # Cria o túnel público (link exibido no log)
