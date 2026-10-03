@@ -11,12 +11,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Senha do Usuário no macOS
+      - name: Configurar Senha do Usuário e VNC
         run: |
-          # Altera a senha do usuário runner usando o dscl nativo do macOS
-          sudo dscl . -passwd /Users/runner 123456
+          # Define a senha do usuário runner sem pedir a antiga
+          sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
           
-          # Ativa o serviço de Screen Sharing / VNC nativo
+          # Ativa o VNC nativo com a senha
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
