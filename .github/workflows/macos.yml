@@ -13,7 +13,7 @@ jobs:
 
       - name: Configurar Senha e VNC Nativo
         run: |
-          # Altera a senha do usuário runner sem pedir a antiga
+          # Altera a senha do usuário runner
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
           
           # Ativa o VNC nativo do macOS na porta 5900
@@ -25,19 +25,18 @@ jobs:
 
       - name: Instalar noVNC e Abrir Túnel
         run: |
-          # Instala websockify com a flag do Python para o macOS não bloquear
+          # Instala websockify e clona noVNC
           python3 -m pip install websockify --break-system-packages
-          
-          # Baixa o repositório oficial do noVNC
           git clone https://github.com/novnc/noVNC.git ~/noVNC
           
-          # Inicia a ponte noVNC na porta 6080
+          # Inicia a ponte noVNC em segundo plano
           websockify --web ~/noVNC 6080 localhost:5900 &
           sleep 3
           
-          # Cria o túnel público via Pinggy
-          ssh -p 443 -R0:localhost:6080 a.pinggy.io
-          sleep 3
-          
-          # Cria o túnel público (link exibido no log)
-          ssh -p 443 -R0:localhost:6080 a.pinggy.io
+          # Abre o túnel SSH sem pedir confirmação de HostKey e mantendo a conexão ativa
+          ssh -p 443 \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=30 \
+            -T \
+            -R0:localhost:6080 a.pinggy.io
