@@ -13,19 +13,14 @@ jobs:
 
       - name: Configurar Senha e VNC Nativo
         run: |
-          # Define a senha do usuário runner
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
-          
-          # Ativa o VNC nativo do macOS na porta 5900
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Abrir Túnel TCP para VNC com Serveo
+      - name: Abrir Túnel TCP Estável com LocalXpose
         run: |
-          # Cria o túnel TCP direto para a porta 5900 via SSH
-          ssh -o StrictHostKeyChecking=no \
-              -o ServerAliveInterval=60 \
-              -R 0:localhost:5900 serveo.net
+          curl -s https://api.localxpose.io/api/v2/downloads/loclx-darwin-arm64.tar.gz | tar -xz
+          ./loclx tunnel tcp --to 127.0.0.1:5900
