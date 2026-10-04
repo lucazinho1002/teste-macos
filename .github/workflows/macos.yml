@@ -11,23 +11,27 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar Senha e VNC Nativo
+      - name: Configurar VNC e Destravar Interface Gráfica
         run: |
+          # 1. Altera a senha do usuário runner
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
+
+          # 2. Habilita resoluções virtuais e força o login automático do runner para carregar a Aqua UI
+          sudo defaults write /Library/Preferences/com.apple.windowserver.plist DisplayResolutionEnabled -bool true
+          sudo defaults write /Library/Preferences/com.apple.loginwindow autoLoginUser "runner"
+
+          # 3. Ativa o VNC nativo (Apple Remote Desktop)
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Forçar Inicialização da Interface (Aqua UI)
-        run: |
+          # 4. Desativa efeitos pesados de transparência e movimento para acelerar o VNC
           defaults write com.apple.universalaccess reduceTransparency -bool true
           defaults write com.apple.universalaccess reduceMotion -bool true
-          brew install screenresolution
-          screenresolution set 1280x720x32 || true
 
-      - name: Instalar NullPlayer via Homebrew
+      - name: Instalar NullPlayer
         run: |
           brew tap ad-repo/nullplayer
           brew install --cask ad-repo/nullplayer/nullplayer
@@ -40,3 +44,4 @@ jobs:
         run: |
           brew install bore-cli
           bore local 5900 --to bore.pub
+          
