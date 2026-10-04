@@ -13,17 +13,14 @@ jobs:
 
       - name: Configurar Senha e VNC Nativo
         run: |
-          # Reseta a senha do usuário runner para 123456
           sudo sysadminctl -resetPasswordFor runner -newPassword "123456"
-          
-          # Ativa o VNC nativo na porta 5900
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -access -on \
             -clientopts -setvnclegacy -vnclegacy yes \
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
-      - name: Abrir Túnel TCP Estável com LocalXpose
+      - name: Abrir Túnel TCP Direto com Bore
         run: |
-          brew install localxpose
-          loclx tunnel tcp --to 127.0.0.1:5900
+          brew install bore-cli
+          bore local 5900 --to bore.pub
