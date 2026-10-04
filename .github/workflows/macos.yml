@@ -20,6 +20,22 @@ jobs:
             -clientopts -setvncpw -vncpw 123456 \
             -restart -agent -privs -all
 
+      - name: Forçar Inicialização da Interface (Aqua UI)
+        run: |
+          defaults write com.apple.universalaccess reduceTransparency -bool true
+          defaults write com.apple.universalaccess reduceMotion -bool true
+          brew install screenresolution
+          screenresolution set 1280x720x32 || true
+
+      - name: Instalar NullPlayer via Homebrew
+        run: |
+          brew tap ad-repo/nullplayer
+          brew install --cask ad-repo/nullplayer/nullplayer
+
+      - name: Executar o NullPlayer
+        run: |
+          open -a /Applications/NullPlayer.app
+
       - name: Abrir Túnel TCP Direto com Bore
         run: |
           brew install bore-cli
